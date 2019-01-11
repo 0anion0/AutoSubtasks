@@ -32,6 +32,7 @@ class AutoCreateSubtask extends Base
       'time_estimated' => t('Estimated Time in Hours'),
       'duration' => t('Duration in days'),
       'check_box' => t('Apply to all Columns'),
+      'check_box_duplicates' => t('Do not create duplicates Subtasks'),
     );
   }
 
@@ -66,8 +67,18 @@ class AutoCreateSubtask extends Base
     $subtasks = explode("\r\n", isset($values['title']) ? $values['title'] : '');
     $subtasksAdded = 0;
 
+    $subtasks = array_map('trim',$subtasks);
+    if ($this->getParam('check_box_duplicates') == true ){
+      $ss=$this->subtaskModel->getAll($data['task_id']);
+      foreach ($ss as $s) {
+        if (in_array($s['title'], $subtasks)) {
+          $key = array_search($s['title'], $subtasks);
+          unset($subtasks[$key]);
+        }
+      }
+    }
+
     foreach ($subtasks as $subtask) {
-      $subtask = trim($subtask);
 
       if (! empty($subtask)) {
         $subtaskValues = $values;
